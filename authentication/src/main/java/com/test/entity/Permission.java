@@ -23,4 +23,7 @@ public class Permission extends BaseEntity {
      */
     @Column(name = "uri")
     private String uri;
+
+    @Column(name = "method")
+    private String method;
 }

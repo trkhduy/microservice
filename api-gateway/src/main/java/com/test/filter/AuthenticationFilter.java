@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 
+import static com.test.constant.CommonConstants.*;
+
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
@@ -37,11 +39,16 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 if (authHeader != null && authHeader.startsWith(CommonConstants.BEARER_TOKEN_PREFIX)) {
                     String token = authHeader.substring(CommonConstants.BEARER_PREFIX_LENGTH);
                     String requestUri = exchange.getRequest().getURI().getPath();
+                    String method = exchange.getRequest().getMethod().name();
+                    if(method.equals(GET_METHOD)) {
+                        method = requestUri.matches(NUMERIC_SUFFIX_REGEX) ? GET_BY_METHOD : exchange.getRequest().getMethod().name();
+                    }
                     System.out.println("Request URI: " + requestUri);
+                    System.out.println("Request Method: " + method);
                     // Handle the response here
                     return webClientBuilder.build()
                             .get()
-                            .uri("http://AUTHENTICATION/api/auth/authorize?token=" + token + "&uri=" + requestUri)
+                            .uri("http://AUTHENTICATION/api/auth/authorize?token=" + token + "&uri=" + requestUri + "&method=" + method)
                             .retrieve()
                             .bodyToMono(String.class)
                             .flatMap(response -> {

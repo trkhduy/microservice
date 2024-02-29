@@ -35,8 +35,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/authorize")
-    public Boolean authorize(@RequestParam("token") String token, @RequestParam("uri") String uri){
-        System.out.println("chay ngay di");
-        return authenticationService.authorize(token, uri);
+    public Boolean authorize(@RequestParam("token") String token, @RequestParam("uri") String uri, @RequestParam("method") String method){
+        return authenticationService.authorize(token, uri, method);
     }
 }

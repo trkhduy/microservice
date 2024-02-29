@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -48,7 +49,7 @@ public class AuthenticationService {
      * @return UserResponse with registered user details and JWT token
      */
     @Transactional
-    public UserResponse register(UserRequest dto){
+    public UserResponse register(UserRequest dto) {
         this.checkUsernameIfExist(dto.getUsername());
         User user = MapperUtils.toEntity(dto, User.class);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -74,7 +75,7 @@ public class AuthenticationService {
      * @return AuthenticationResponse with user ID and JWT token
      */
     public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
-        var token = new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),authenticationRequest.getPassword());
+        var token = new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword());
         CustomUserDetail customUserDetail = (CustomUserDetail) authenticationManager.authenticate(token).getPrincipal();
         return AuthenticationResponse.builder()
                 .id(customUserDetail.getUser().getId())
@@ -82,12 +83,30 @@ public class AuthenticationService {
                 .build();
     }
 
-    public boolean authorize(String token, String uri){
+    /**
+     * Authorize the user based on the provided JWT token, URI, and HTTP method.
+     *
+     * @param token  The JWT token.
+     * @param uri    The URI of the request.
+     * @param method The HTTP method of the request.
+     * @return true if the user is authorized, false otherwise.
+     */
+    public boolean authorize(String token, String uri, String method) {
+        // Extract username from JWT token
         String username = jwtService.extractUsername(token);
+        // Load user details by username
         CustomUserDetail customUserDetail = (CustomUserDetail) customUserDetailService.loadUserByUsername(username);
-        String permissionNameByUri = permissionRepository.findPermissionByUri(uri).map(Permission::getName).orElse(null);
-        System.out.println("Permission name" + permissionNameByUri);
-        return customUserDetail.getAuthorities().contains(new SimpleGrantedAuthority(permissionNameByUri));
+        // Find permissions for the given HTTP method
+        Optional<List<Permission>> permissions = permissionRepository.findPermissionByMethod(method);
+        // Find permission name for the requested URI
+        String permissionName = permissions.flatMap(list -> list.stream()
+                        .filter(permission -> uri.contains(permission.getUri()))
+                        .map(Permission::getName)
+                        .findFirst())
+                .orElse(null);
+        System.out.println("Permission name" + permissionName);
+        // Check if the user has the required permission
+        return customUserDetail.getAuthorities().contains(new SimpleGrantedAuthority(permissionName));
     }
 
     /**
@@ -96,9 +115,9 @@ public class AuthenticationService {
      *
      * @param username Username to check for duplication
      */
-    private void checkUsernameIfExist(String username){
+    private void checkUsernameIfExist(String username) {
         Optional<User> optionalUser = userRepository.findUserByUsername(username);
-        if(optionalUser.isPresent()){
+        if (optionalUser.isPresent()) {
             throw new IllegalArgumentException("Username existed!");
         }
     }
