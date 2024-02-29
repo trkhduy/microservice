@@ -42,6 +42,11 @@ public class RoleController {
         return new ResponseEntity<>(roleService.viewAll(), HttpStatus.OK);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<RoleResponse> getById(@PathVariable("id") Long id) {
+        return new ResponseEntity<>(roleService.findById(id), HttpStatus.OK);
+    }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         roleService.delete(id);

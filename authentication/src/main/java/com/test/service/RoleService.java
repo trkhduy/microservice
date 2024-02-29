@@ -14,4 +14,6 @@ public interface RoleService {
     List<RoleResponse> viewAll();
 
     void delete(Long id);
+
+    RoleResponse findById(Long id);
 }

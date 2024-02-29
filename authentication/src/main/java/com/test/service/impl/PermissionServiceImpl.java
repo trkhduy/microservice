@@ -26,13 +26,15 @@ public class PermissionServiceImpl implements PermissionService {
         this.checkPermissionIfExist(request.getName());
         Permission permission = new Permission(
                 request.getName(),
-                request.getUri()
+                request.getUri(),
+                request.getMethod()
         );
         Permission newPer = repository.save(permission);
         return new PermissionResponse(
                 newPer.getId(),
                 newPer.getName(),
-                newPer.getUri()
+                newPer.getUri(),
+                newPer.getMethod()
         );
     }
 
@@ -46,7 +48,8 @@ public class PermissionServiceImpl implements PermissionService {
         return new PermissionResponse(
                 permission.getId(),
                 permission.getName(),
-                permission.getUri()
+                permission.getUri(),
+                permission.getMethod()
         );
     }
 

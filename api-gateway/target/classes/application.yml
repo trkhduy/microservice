@@ -26,6 +26,13 @@ spring:
           filters:
             - AuthenticationFilter
 
+        - id: authentication
+          uri: lb://AUTHENTICATION
+          predicates:
+            - Path=/api/v1/users/**
+          filters:
+            - AuthenticationFilter
+
 eureka:
   client:
     service-url:

@@ -66,6 +66,11 @@ public class RoleServiceImpl implements RoleService {
         repository.delete(role);
     }
 
+    @Override
+    public RoleResponse findById(Long id) {
+        return MapperUtils.toDTO(this.checkRoleExist(id),RoleResponse.class);
+    }
+
     private Role checkRoleExist(Long id) {
         Optional<Role> role = repository.findById(id);
         if (role.isEmpty()) {
